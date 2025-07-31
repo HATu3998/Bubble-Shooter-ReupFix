@@ -11,6 +11,7 @@ TagManager:
   - pink
   - bluesky
   - white
+  - deathzone
   layers:
   - Default
   - TransparentFX

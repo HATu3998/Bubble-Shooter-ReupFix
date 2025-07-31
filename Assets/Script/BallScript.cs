@@ -20,12 +20,26 @@ public class BallScript : MonoBehaviour
     }
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if(collision.transform.parent == null && gameObject.transform.parent.name == "BallPool")
+        // Debug.Log("Trigger with: " + collision.gameObject.name);
+
+        //if (collision.transform.parent == null)
+        //    Debug.Log("collision.transform.parent is NULL");
+
+        //if (gameObject.transform.parent == null)
+        //    Debug.Log("THIS BALL's parent is NULL!");
+        
+        
+        if (gameObject.transform.parent != null &&  
+            collision.transform.parent == null &&
+            gameObject.transform.parent.name == "BallPool")
         {
             collision.transform.parent = gameObject.transform.parent;
-            collision.GetComponent<BallScript>().Direction = Vector3.zero;
-
-            BallSpawn.Spawn.SoftBall(collision.gameObject, gameObject);
+            BallScript otherBall = collision.GetComponent<BallScript>();
+            if (otherBall != null)
+            {
+                otherBall.Direction = Vector3.zero;
+                BallSpawn.Spawn.SoftBall(collision.gameObject, gameObject);
+            }
         }
     }
 }
