@@ -1,4 +1,7 @@
+using System;
 using System.Collections;
+using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class BallSpawn : MonoBehaviour
@@ -12,6 +15,7 @@ public class BallSpawn : MonoBehaviour
     GameObject[,] ListBall;
     int indexRow;
     public static BallSpawn Spawn;
+    private bool[,] visited;
 
     private void Awake()
     {
@@ -29,6 +33,8 @@ public class BallSpawn : MonoBehaviour
         SpawnPosition.x += ((ballSize / 2 + (width / 2 / 2)));
         int num = Mathf.FloorToInt(height / ballSize);
         ListBall = new GameObject[1000, NumberBallInRow];
+        visited = new bool[1000, NumberBallInRow];
+        ListBallSameColor = new List<GameObject>();
         SpawnGid(num);
 
         
@@ -171,7 +177,11 @@ public class BallSpawn : MonoBehaviour
                 if (distances < 0.75)
                 {
                     BallisShot.transform.position = ListBall[i, j].transform.position;
+                    Destroy(ListBall[i, j]);
                     ListBall[i,j] = BallisShot;
+
+                    ListBallSameColor.Add(CountBallSameColor(i, j, BallisShot.tag));
+
                     return;
 
                 }
@@ -187,6 +197,80 @@ public class BallSpawn : MonoBehaviour
             yield return new WaitForSeconds(5);
         }
     }
+
+    public List<GameObject> ListBallSameColor;
+    GameObject CountBallSameColor(int row, int col, string color)
+    {
+        if(!isValidPosition(row, col) || !isSameColor(row, col,color) || isVisited(row, col))
+        {
+            return null;
+        }
+        MarkAsVisited(row, col);
+        if(row % 2 ==1)
+        {
+            AddIfNotNull(ListBallSameColor, CountBallSameColor(row + 1, col, color));
+            AddIfNotNull(ListBallSameColor, CountBallSameColor(row + 1, col + 1, color));
+            AddIfNotNull(ListBallSameColor, CountBallSameColor(row, col + 1, color));
+            AddIfNotNull(ListBallSameColor, CountBallSameColor(row, col- 1, color));
+            AddIfNotNull(ListBallSameColor, CountBallSameColor(row - 1, col, color));
+            AddIfNotNull(ListBallSameColor, CountBallSameColor(row - 1, col + 1, color));
+
+        }else
+        {
+            AddIfNotNull(ListBallSameColor, CountBallSameColor(row + 1, col - 1, color));
+            AddIfNotNull(ListBallSameColor, CountBallSameColor(row + 1, col  , color));
+            AddIfNotNull(ListBallSameColor, CountBallSameColor(row, col + 1, color));
+            AddIfNotNull(ListBallSameColor, CountBallSameColor(row, col - 1, color));
+            AddIfNotNull(ListBallSameColor, CountBallSameColor(row - 1, col - 1, color));
+            AddIfNotNull(ListBallSameColor, CountBallSameColor(row - 1, col  , color));
+        }
+        return ListBall[row, col];  
+    }
+    void AddIfNotNull(List<GameObject> list, GameObject gameO)
+    {
+        if(gameO != null)
+        {
+            list.Add(gameO);
+        }
+    }
+
+    void MarkAsVisited(int row, int col)
+    {
+        visited[row, col] = true;
+    }
+    bool isVisited(int row, int col)
+    {
+        return visited[row, col];
+    }
+    bool isSameColor(int row, int col , string color)
+    {
+        bool isSame;
+        try
+        {
+            isSame = ListBall[row, col].tag == color;
+        }catch(Exception e)
+        {
+            return false;
+        }
+        return isSame;
+    }
+    bool isValidPosition(int row, int col)
+    {
+        bool isValid;
+        if (row % 2 == 0)
+        {
+            isValid = row >= 0 && row <= 1000 && col >= 0 && col < NumberBallInRow;
+        }
+        else
+        {
+            isValid = row >= 0 && row <= 1000 && col >= 0 && col < (NumberBallInRow - 1);
+        }
+        return isValid;
+    }
+
+
+
+
     // Update is called once per frame
     void Update()
     {
