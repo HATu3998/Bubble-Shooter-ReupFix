@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class BallScript : MonoBehaviour
@@ -8,7 +9,20 @@ public class BallScript : MonoBehaviour
     {
         
     }
-
+    IEnumerator CheckAnchor()
+    {
+        while (true)
+        {
+            yield return new WaitForSeconds(0.2f);
+            if(transform.parent != null && transform.parent.name ==  "BallPool")
+            {
+                if(BallSpawn.Spawn.isAllowCheck && !BallSpawn.Spawn.ListBallCurrent.Contains(gameObject))
+                {
+                    Destroy(gameObject);
+                }
+            }
+        }
+    }
     // Update is called once per frame
     void Update()
     {
@@ -16,6 +30,7 @@ public class BallScript : MonoBehaviour
         {
             transform.Translate(Direction * Time.deltaTime * 5f);
         }
+     //   StartCoroutine(CheckAnchor());
         
     }
     private void OnTriggerEnter2D(Collider2D collision)

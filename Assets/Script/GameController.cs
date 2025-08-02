@@ -5,6 +5,8 @@ using UnityEngine.UI;
 public class GameController : MonoBehaviour
 {
   public  Text GameStatus;
+    public Text ScoreText;
+    int score;
     bool isGameOver;
     public static GameController controller;
     private void Awake()
@@ -26,6 +28,10 @@ public class GameController : MonoBehaviour
             isGameOver = false;
             SceneManager.LoadScene("SampleScene");
         }
+    }
+    public void GetScoreText()
+    {
+        ScoreText.text = "Score :" + ++score;
     }
     public void SetGameOver()
     {

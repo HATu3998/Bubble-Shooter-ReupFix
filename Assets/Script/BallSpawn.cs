@@ -39,7 +39,9 @@ public class BallSpawn : MonoBehaviour
 
         
         StartCoroutine(LoopEach5Second());
-       
+       // StartCoroutine(Checkloop());
+
+
     }
     void GetScreenSize(out float height,out float width)
     {
@@ -174,7 +176,7 @@ public class BallSpawn : MonoBehaviour
                     continue;
 
                 float distances = Vector3.Distance(BallisShot.transform.position, ListBall[i, j].transform.position);
-                if (distances < 0.75)
+                if (distances < 0.5 && !IsBall(ListBall[i,j]) )
                 {
                     BallisShot.transform.position = ListBall[i, j].transform.position;
                     Destroy(ListBall[i, j]);
@@ -182,6 +184,7 @@ public class BallSpawn : MonoBehaviour
 
                     ListBallSameColor.Add(CountBallSameColor(i, j, BallisShot.tag));
 
+                    DesTroyBall();
                     return;
 
                 }
@@ -268,9 +271,88 @@ public class BallSpawn : MonoBehaviour
         return isValid;
     }
 
+    bool IsBall(GameObject Go)
+    {
+        if(Go.tag == "Untagged")
+        {
+            return false;
+        }
+        return true;
+    }
+    void DesTroyBall()
+    {
+        if (ListBallSameColor.Count <= 2)
+        {
+            ListBallSameColor = new();
+        }
+        else
+        {
+            foreach(var item in ListBallSameColor)
+            {
+                GameObject newGame = new();
+                newGame.transform.position = item.transform.position;
+                int row, col;
+                GetIndex(item, out row, out col);
+                ListBall[row, col] = newGame;
+                Destroy(item.gameObject);
+                GameController.controller.GetScoreText();
+            }
+        }
+        ListBallSameColor = new();
+        visited = new bool[1000, NumberBallInRow];
+    }
+
+
+    IEnumerator Checkloop()
+    {
+        while(true)
+        {
+            isAllowCheck =false;
+            ListBallCurrent = new List<GameObject>();
+            CheckBallAnchor(indexRow - 1, 0);
+            isAllowCheck = true;
+
+            yield return new WaitForSeconds(0.2f);
+            
+        }
+    }
 
 
 
+    public List<GameObject> ListBallCurrent;
+    public bool isAllowCheck;
+    void CheckBallAnchor(int row, int col)
+    {
+        if (!isValidPosition(row, col))
+        {
+
+            return;
+        }
+        GameObject a = ListBall[row, col];
+        if(a == null || !IsBall (a) || ListBallCurrent.Contains(a))
+        {
+            return;
+        }
+        ListBallCurrent.Add(a);
+        if(row % 2== 0)
+        {
+            CheckBallAnchor(row + 1, col - 1);
+            CheckBallAnchor(row + 1, col  );
+            CheckBallAnchor(row  , col + 1);
+            CheckBallAnchor(row + 1, col - 1);
+            CheckBallAnchor(row  , col - 1);
+            CheckBallAnchor(row - 1, col - 1);
+
+        }else
+        {
+            CheckBallAnchor(row + 1, col + 1);
+            CheckBallAnchor(row + 1, col);
+            CheckBallAnchor(row, col + 1);
+            CheckBallAnchor(row  , col - 1);
+            CheckBallAnchor(row -1, col );
+            CheckBallAnchor(row - 1, col + 1);
+        }
+    }
     // Update is called once per frame
     void Update()
     {
